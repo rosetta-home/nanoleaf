@@ -1,9 +1,9 @@
-defmodule Nanoleaf.Streamer do
+defmodule NanoleafWrite.Writer do
   use GenServer
   require Logger
 
-  @nano :"uuid:3aebec1d-2709-415e-a75a-88a1e0725dd3"
-  @panels [46, 178, 54, 132, 228, 235, 27, 120, 242, 110, 152, 149]
+  @nano :"uuid:3aebec1d-2709-415e-a75a-88a1e0725dd3" #update this with the UDN of your nanoleaf
+  @panels [46, 178, 54, 132, 228, 235, 27, 120, 242, 110, 152, 149] # these are panel id's in order of rendering
 
   def start_link() do
     GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
@@ -14,12 +14,13 @@ defmodule Nanoleaf.Streamer do
   end
 
   def init(:ok) do
+    SSDP.Client.start()
+    Process.send_after(self(), :start, 5_000)
     {:ok, %{co2: [], panels: []}}
   end
 
-  def handle_cast(:start, state) do
+  def handle_info(:start, state) do
     Nanoleaf.Device.set_api_key(@nano, "EXIKpkqbDmsywejvEF8BrAXdi6baDBRP")
-    :timer.sleep(1000)
     #device_state = Nanoleaf.Device.state(@nano)
     #panels =
     #  device_state.device_state["panelLayout"]["layout"]["positionData"]
@@ -36,7 +37,7 @@ defmodule Nanoleaf.Streamer do
     multi = 0.1275
     frame = gen_frame(co2, multi)
     Nanoleaf.Device.write(@nano, %{write: %{command: "display", version: "1.0", animType: "custom", animData: frame, loop: false}})
-    Process.send_after(self(), :animate, 6000)
+    Process.send_after(self(), :animate, 1000)
     {:noreply, %{state | co2: co2}}
   end
 
@@ -47,7 +48,7 @@ defmodule Nanoleaf.Streamer do
       r = round(v * multi)
       g = 50
       b = 100
-      "#{acc} #{id} 1 #{r} #{g} #{b} 1 40"
+      "#{acc} #{id} 1 #{r} #{g} #{b} 1 10"
     end)
   end
 

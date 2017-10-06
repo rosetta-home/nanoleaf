@@ -1,9 +1,9 @@
-defmodule NanoleafWrite.Mixfile do
+defmodule NanoleafStream.Mixfile do
   use Mix.Project
 
   def project do
     [
-      app: :nanoleaf_write,
+      app: :nanoleaf_stream,
       version: "0.1.0",
       elixir: "~> 1.5",
       start_permanent: Mix.env == :prod,
@@ -15,7 +15,7 @@ defmodule NanoleafWrite.Mixfile do
   def application do
     [
       extra_applications: [:logger],
-      mod: {NanoleafWrite.Application, []}
+      mod: {NanoleafStream.Application, []}
     ]
   end
 

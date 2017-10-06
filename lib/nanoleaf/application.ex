@@ -7,7 +7,6 @@ defmodule Nanoleaf.Application do
 
     children = [
       worker(Nanoleaf.Client, []),
-      worker(Nanoleaf.Streamer, []),
       supervisor(Nanoleaf.DeviceSupervisor, [])
     ]
 

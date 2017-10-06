@@ -12,11 +12,11 @@ config :logger, level: :info
 
 # You can configure your application as:
 #
-#     config :nanoleaf_write, key: :value
+#     config :nanoleaf_stream, key: :value
 #
 # and access this configuration in your application as:
 #
-#     Application.get_env(:nanoleaf_write, :key)
+#     Application.get_env(:nanoleaf_stream, :key)
 #
 # You can also configure a 3rd-party app:
 #
