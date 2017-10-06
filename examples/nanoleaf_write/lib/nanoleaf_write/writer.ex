@@ -21,13 +21,6 @@ defmodule NanoleafWrite.Writer do
 
   def handle_info(:start, state) do
     Nanoleaf.Device.set_api_key(@nano, "EXIKpkqbDmsywejvEF8BrAXdi6baDBRP")
-    #device_state = Nanoleaf.Device.state(@nano)
-    #panels =
-    #  device_state.device_state["panelLayout"]["layout"]["positionData"]
-    #  |> Enum.sort(&( (&1["y"]+&1["x"]) >= (&2["y"]+&2["x"]) ))
-    #Logger.info("#{inspect panels}")
-    #Nanoleaf.Device.open_stream(@nano)
-    #Process.send_after(self(), :generate_co2, 0)
     Process.send_after(self(), :animate, 1000)
     {:noreply, state}
   end
@@ -37,7 +30,7 @@ defmodule NanoleafWrite.Writer do
     multi = 0.1275
     frame = gen_frame(co2, multi)
     Nanoleaf.Device.write(@nano, %{write: %{command: "display", version: "1.0", animType: "custom", animData: frame, loop: false}})
-    Process.send_after(self(), :animate, 1000)
+    Process.send_after(self(), :animate, 6000)
     {:noreply, %{state | co2: co2}}
   end
 
@@ -48,7 +41,7 @@ defmodule NanoleafWrite.Writer do
       r = round(v * multi)
       g = 50
       b = 100
-      "#{acc} #{id} 1 #{r} #{g} #{b} 1 10"
+      "#{acc} #{id} 1 #{r} #{g} #{b} 1 40"
     end)
   end
 
