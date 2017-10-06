@@ -3,6 +3,7 @@ defmodule Nanoleaf.Streamer do
   require Logger
 
   @nano :"uuid:3aebec1d-2709-415e-a75a-88a1e0725dd3"
+  @panels [46, 178, 54, 132, 228, 235, 27, 120, 242, 110, 152, 149]
 
   def start_link() do
     GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
@@ -13,32 +14,46 @@ defmodule Nanoleaf.Streamer do
   end
 
   def init(:ok) do
-    {:ok, %{}}
+    {:ok, %{co2: [], panels: []}}
   end
 
   def handle_cast(:start, state) do
-    device_state = Nanoleaf.Device.state(@nano)
-    Nanoleaf.Device.open_stream(@nano)
+    Nanoleaf.Device.set_api_key(@nano, "EXIKpkqbDmsywejvEF8BrAXdi6baDBRP")
+    :timer.sleep(1000)
+    #device_state = Nanoleaf.Device.state(@nano)
+    #panels =
+    #  device_state.device_state["panelLayout"]["layout"]["positionData"]
+    #  |> Enum.sort(&( (&1["y"]+&1["x"]) >= (&2["y"]+&2["x"]) ))
+    #Logger.info("#{inspect panels}")
+    #Nanoleaf.Device.open_stream(@nano)
+    #Process.send_after(self(), :generate_co2, 0)
     Process.send_after(self(), :animate, 1000)
-    {:noreply, %{device_state: device_state.device_state}}
-  end
-
-  def handle_info(:animate, state) do
-    frame = gen_frame(state.device_state)
-    Logger.info "#{inspect frame}"
-    Nanoleaf.Device.stream(:"uuid:3aebec1d-2709-415e-a75a-88a1e0725dd3", frame)
-    Process.send_after(self(), :animate, 100)
     {:noreply, state}
   end
 
-  def gen_frame(device_state) do
-    num_panels = device_state["panelLayout"]["layout"]["positionData"] |> Enum.count()
-    device_state["panelLayout"]["layout"]["positionData"] |> Enum.reduce([num_panels], fn(panel, acc) ->
-      id = panel["panelId"]
-      r = Enum.random(1..255)
-      g = Enum.random(1..255)
-      b = Enum.random(1..255)
-      acc ++ [id, 1] ++ [r, g, b, 0, 1]
+  def handle_info(:animate, state) do
+    co2 = state.co2 |> generate_co2
+    multi = 0.1275
+    frame = gen_frame(co2, multi)
+    Nanoleaf.Device.write(@nano, %{write: %{command: "display", version: "1.0", animType: "custom", animData: frame, loop: false}})
+    Process.send_after(self(), :animate, 6000)
+    {:noreply, %{state | co2: co2}}
+  end
+
+  def gen_frame(co2, multi) do
+    0..11 |> Enum.reduce("12", fn(i, acc) ->
+      v = co2 |> Enum.at(i)
+      id = @panels |> Enum.at(i)
+      r = round(v * multi)
+      g = 50
+      b = 100
+      "#{acc} #{id} 1 #{r} #{g} #{b} 1 40"
     end)
   end
+
+  def generate_co2([]), do: 1..12 |> Enum.map(fn(i) -> Enum.random(400..2000) end)
+  def generate_co2(co2) do
+    co2 |> Enum.drop(-1) |> (fn l -> [Enum.random(400..2000)] ++ l end).()
+  end
+
 end

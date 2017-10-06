@@ -21,6 +21,7 @@ defmodule Nanoleaf.Device do
   def stream(pid, payload), do: GenServer.cast(pid, {:stream, payload})
   def random(pid), do: GenServer.cast(pid, :random)
   def state(pid), do: GenServer.call(pid, :state)
+  def set_api_key(pid, key), do: GenServer.call(pid, {:set_api_key, key})
 
   def start_link(device) do
     pid = :"#{device.device.udn}"
@@ -33,6 +34,11 @@ defmodule Nanoleaf.Device do
   end
 
   def handle_call(:state, _from, state), do: {:reply, state, state}
+
+  def handle_call({:set_api_key, key}, _from, state) do
+    Process.send_after(self(), :device_state, 0)
+    {:reply, :ok, %State{state | api_key: key}}
+  end
 
   def handle_cast({:device_update, device}, state) do
     Logger.info("Device Updating: #{inspect device.device.udn}")
@@ -97,7 +103,7 @@ defmodule Nanoleaf.Device do
     {:noreply, state}
   end
 
-  def handle_info(:register, state) do
+  def handle_info(:register, %State{api_key: key} = state) when key == nil do
     state =
       case HTTPoison.post("#{state.device.url}/api/v1/new", "") do
         {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
@@ -116,6 +122,7 @@ defmodule Nanoleaf.Device do
       end
     {:noreply, state}
   end
+  def handle_info(:register, state), do: {:noreply, state}
 
   def handle_info(:device_state, state) do
     {:ok, device_state} = get("", state)
