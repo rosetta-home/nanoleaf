@@ -125,8 +125,12 @@ defmodule Nanoleaf.Device do
   def handle_info(:register, state), do: {:noreply, state}
 
   def handle_info(:device_state, state) do
-    {:ok, device_state} = get("", state)
-    {:noreply, %State{state | device_state: device_state}}
+    state =
+      case get("", state) do
+        {:ok, device_state} -> %State{state | device_state: device_state}
+        _ -> state
+      end
+    {:noreply, state}
   end
 
   def handle_info({:stream_interface, info}, state) do
