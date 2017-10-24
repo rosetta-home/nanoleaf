@@ -46,42 +46,42 @@ defmodule Nanoleaf.Device do
   end
 
   def handle_cast(:on, state) do
-    :ok = put("/state/on", %{value: true}, state)
+    put("/state/on", %{value: true}, state)
     {:noreply, state}
   end
 
   def handle_cast(:off, state) do
-    :ok = put("/state/on", %{value: false}, state)
+    put("/state/on", %{value: false}, state)
     {:noreply, state}
   end
 
   def handle_cast({:brightness, value}, state) do
-    :ok = put("/state/brightness", %{brightness: %{value: value}}, state)
+    put("/state/brightness", %{brightness: %{value: value}}, state)
     {:noreply, state}
   end
 
   def handle_cast({:hue, value}, state) do
-    :ok = put("/state/hue", %{hue: %{value: value}}, state)
+    put("/state/hue", %{hue: %{value: value}}, state)
     {:noreply, state}
   end
 
   def handle_cast({:saturation, value}, state) do
-    :ok = put("/state/sat", %{sat: %{value: value}}, state)
+    put("/state/sat", %{sat: %{value: value}}, state)
     {:noreply, state}
   end
 
   def handle_cast({:color_temperature, value}, state) do
-    :ok = put("/state/ct", %{ct: %{value: value}}, state)
+    put("/state/ct", %{ct: %{value: value}}, state)
     {:noreply, state}
   end
 
   def handle_cast({:write, value}, state) do
-    :ok = put("/effects", value, state)
+    put("/effects", value, state)
     {:noreply, state}
   end
 
   def handle_cast(:start_stream, state) do
-    :ok = put("/effects", %{write: %{command: "display", version: "1.0", animType: "extControl", animData: nil, loop: false}}, state)
+    put("/effects", %{write: %{command: "display", version: "1.0", animType: "extControl", animData: nil, loop: false}}, state)
     {:noreply, state}
   end
 

@@ -40,7 +40,7 @@ defmodule NanoleafWrite.Writer do
       id = @panels |> Enum.at(i)
       r = round(v * multi)
       g = 50
-      b = 100
+      b = 255
       "#{acc} #{id} 1 #{r} #{g} #{b} 1 40"
     end)
   end
